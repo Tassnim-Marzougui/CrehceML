@@ -12,6 +12,7 @@ import numpy as np
 import joblib
 import json
 import io
+import httpx
 
 from database import get_db, create_tables, Utilisateur, Creche, DemandeAdmission
 from auth import (hash_password, verify_password, create_access_token,
@@ -169,7 +170,7 @@ def predict(
     db: Session = Depends(get_db),
     current_user: Utilisateur = Depends(require_moderateur)
 ):
-    prediction, confidence, probabilities = predict_single(data.dict())
+    prediction, confidence, probabilities = predict_single(data.model_dump())
     creche_id = current_user.creche.id if current_user.creche else None
     demande = DemandeAdmission(
         **data.dict(),
@@ -274,3 +275,52 @@ def toggle_moderateur(
     user.actif = not user.actif
     db.commit()
     return {"message": f"Compte {'active' if user.actif else 'desactive'}", "actif": user.actif}
+# ══════════════════════════════════════════════════
+#  ENDPOINTS IA (Proxy Claude)
+# ══════════════════════════════════════════════════
+ANTHROPIC_API_KEY = "ta_cle_api_ici"  # ← mets ta clé ici
+
+@app.post("/api/ai/explain")
+async def ai_explain(
+    data: dict,
+    current_user: Utilisateur = Depends(require_moderateur)
+):
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json"
+            },
+            json={
+                "model": "claude-haiku-4-5-20251001",
+                "max_tokens": 500,
+                "messages": data.get("messages", [])
+            },
+            timeout=30.0
+        )
+    return response.json()
+
+@app.post("/api/ai/chat")
+async def ai_chat(
+    data: dict,
+    current_user: Utilisateur = Depends(require_moderateur)
+):
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json"
+            },
+            json={
+                "model": "claude-haiku-4-5-20251001",
+                "max_tokens": 500,
+                "system": data.get("system", ""),
+                "messages": data.get("messages", [])
+            },
+            timeout=30.0
+        )
+    return response.json()    

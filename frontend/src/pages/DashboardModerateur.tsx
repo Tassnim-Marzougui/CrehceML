@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import api from '../api';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import AIExplainer from '../components/AIExplainer';
+import AIChatbot from '../components/AIChatbot';
 
 const FIELDS = {
   parents:  { label: '👨‍👩‍👧 Situation des parents', options: [['usual','Situation normale'],['pretentious','Prétentieux'],['great_pret','Très prétentieux']] },
   has_nurs: { label: '🏫 Qualité garderie', options: [['proper','Bonne'],['less_proper','Acceptable'],['improper','Inadaptée'],['critical','Critique'],['very_crit','Très critique']] },
   form:     { label: '👪 Structure familiale', options: [['complete','Famille complète'],['completed','Recomposée'],['incomplete','Incomplète'],['foster',"D'accueil"]] },
-  children: { label: '👶 Nombre d\'enfants', options: [['1','1 enfant'],['2','2 enfants'],['3','3 enfants'],['more','Plus de 3']] },
+  children: { label: "👶 Nombre d'enfants", options: [['1','1 enfant'],['2','2 enfants'],['3','3 enfants'],['more','Plus de 3']] },
   housing:  { label: '🏠 Logement', options: [['convenient','Convenable'],['less_conv','Peu convenable'],['critical','Critique']] },
   finance:  { label: '💰 Finances', options: [['convenient','Stables'],['inconv','Difficultés']] },
   social:   { label: '🌍 Conditions sociales', options: [['nonprob','Pas de problème'],['slightly_prob','Légèrement problématique'],['problematic','Problématique']] },
@@ -90,12 +92,13 @@ export default function DashboardModerateur() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 via-yellow-50 to-blue-100 relative overflow-hidden">
+
       {/* Éléments décoratifs */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-white/60 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-48 h-48 bg-blue-200/50 rounded-full blur-3xl"></div>
-        <div className="absolute top-20 right-20 w-40 h-40 bg-pink-200/50 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-20 left-20 w-36 h-36 bg-yellow-200/50 rounded-full blur-2xl"></div>
+        <div className="absolute top-10 left-10 w-32 h-32 bg-white/60 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-10 w-48 h-48 bg-blue-200/50 rounded-full blur-3xl" />
+        <div className="absolute top-20 right-20 w-40 h-40 bg-pink-200/50 rounded-full blur-2xl" />
+        <div className="absolute bottom-20 left-20 w-36 h-36 bg-yellow-200/50 rounded-full blur-2xl" />
         <div className="absolute top-1/4 left-5 text-6xl opacity-20 rotate-12">☁️</div>
         <div className="absolute bottom-1/3 right-5 text-7xl opacity-20 -rotate-12">☁️</div>
         <div className="absolute top-2/3 left-1/4 text-4xl opacity-10">🐻</div>
@@ -113,11 +116,11 @@ export default function DashboardModerateur() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm bg-pink-100 text-pink-700 px-4 py-1.5 rounded-full flex items-center gap-1">
-            <span>👤</span> {nom}
+            👤 {nom}
           </span>
           <button onClick={doLogout}
             className="text-sm bg-white border border-pink-300 hover:bg-pink-50 text-pink-600 px-4 py-1.5 rounded-full transition shadow-sm flex items-center gap-1">
-            <span>🚪</span> Déconnexion
+            🚪 Déconnexion
           </button>
         </div>
       </nav>
@@ -126,30 +129,25 @@ export default function DashboardModerateur() {
 
         {/* KPI CARDS */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 text-center shadow-lg border border-white/40">
-            <div className="text-3xl mb-1">📊</div>
-            <p className="text-2xl font-bold text-pink-500">{stats?.total_predictions ?? '...'}</p>
-            <p className="text-xs text-gray-500 mt-1">Prédictions totales</p>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 text-center shadow-lg border border-white/40">
-            <div className="text-3xl mb-1">🏡</div>
-            <p className="text-2xl font-bold text-blue-500">{stats?.creche?.capacite ?? '...'}</p>
-            <p className="text-xs text-gray-500 mt-1">Capacité crèche</p>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 text-center shadow-lg border border-white/40">
-            <div className="text-3xl mb-1">🏷️</div>
-            <p className="text-lg font-bold text-purple-500 truncate">{stats?.creche?.nom ?? '...'}</p>
-            <p className="text-xs text-gray-500 mt-1">Ma crèche</p>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 text-center shadow-lg border border-white/40">
-            <div className="text-3xl mb-1">📈</div>
-            <p className="text-2xl font-bold text-yellow-500">
-              {stats?.distribution
-                ? Math.round(((stats.distribution['recommend'] || 0) + (stats.distribution['very_recom'] || 0)) / Math.max(stats.total_predictions, 1) * 100)
-                : '...'}%
-            </p>
-            <p className="text-xs text-gray-500 mt-1">Taux d'acceptation</p>
-          </div>
+          {[
+            { icon: '📊', value: stats?.total_predictions ?? '...', label: 'Prédictions totales', color: 'text-pink-500' },
+            { icon: '🏡', value: stats?.creche?.capacite ?? '...', label: 'Capacité crèche', color: 'text-blue-500' },
+            { icon: '🏷️', value: stats?.creche?.nom ?? '...', label: 'Ma crèche', color: 'text-purple-500' },
+            {
+              icon: '📈',
+              value: stats?.distribution
+                ? Math.round(((stats.distribution['recommend'] || 0) + (stats.distribution['very_recom'] || 0)) / Math.max(stats.total_predictions, 1) * 100) + '%'
+                : '...',
+              label: "Taux d'acceptation",
+              color: 'text-yellow-500'
+            },
+          ].map((kpi, i) => (
+            <div key={i} className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 text-center shadow-lg border border-white/40">
+              <div className="text-3xl mb-1">{kpi.icon}</div>
+              <p className={`text-2xl font-bold ${kpi.color} truncate`}>{kpi.value}</p>
+              <p className="text-xs text-gray-500 mt-1">{kpi.label}</p>
+            </div>
+          ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -157,15 +155,13 @@ export default function DashboardModerateur() {
           {/* FORMULAIRE PREDICTION */}
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40">
             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <span>🤖</span> Prédiction d'admission
+              🤖 Prédiction d'admission
             </h2>
 
             <div className="grid grid-cols-2 gap-4">
               {Object.entries(FIELDS).map(([key, field]) => (
                 <div key={key}>
-                  <label className="block text-xs text-gray-600 mb-1 flex items-center gap-1">
-                    {field.label}
-                  </label>
+                  <label className="block text-xs text-gray-600 mb-1">{field.label}</label>
                   <select
                     value={form[key]}
                     onChange={e => setForm({ ...form, [key]: e.target.value })}
@@ -179,7 +175,9 @@ export default function DashboardModerateur() {
               ))}
             </div>
 
-            {error && <p className="text-red-500 text-sm mt-3 flex items-center gap-1">❌ {error}</p>}
+            {error && (
+              <p className="text-red-500 text-sm mt-3">❌ {error}</p>
+            )}
 
             <button onClick={handlePredict} disabled={loading}
               className="mt-4 w-full bg-gradient-to-r from-pink-400 to-blue-400 hover:from-pink-500 hover:to-blue-500 text-white font-bold rounded-2xl py-3 text-sm transition transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2">
@@ -189,8 +187,10 @@ export default function DashboardModerateur() {
             {/* RESULTAT */}
             {result && (
               <div className="mt-4 rounded-2xl p-4 text-center border-2"
-                style={{ borderColor: CLASS_COLORS[result.prediction] || '#64748b',
-                         backgroundColor: (CLASS_COLORS[result.prediction] || '#64748b') + '15' }}>
+                style={{
+                  borderColor: CLASS_COLORS[result.prediction] || '#64748b',
+                  backgroundColor: (CLASS_COLORS[result.prediction] || '#64748b') + '15'
+                }}>
                 <p className="text-2xl font-bold mb-1" style={{ color: CLASS_COLORS[result.prediction] }}>
                   {CLASS_LABELS[result.prediction] || result.prediction}
                 </p>
@@ -202,19 +202,29 @@ export default function DashboardModerateur() {
                     <span className="w-24 text-right text-gray-500">{cls}</span>
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div className="h-2 rounded-full transition-all"
-                        style={{ width: `${(prob*100).toFixed(1)}%`, backgroundColor: CLASS_COLORS[cls] || '#64748b' }} />
+                        style={{ width: `${(prob * 100).toFixed(1)}%`, backgroundColor: CLASS_COLORS[cls] || '#64748b' }} />
                     </div>
-                    <span className="w-10 text-gray-700">{(prob*100).toFixed(1)}%</span>
+                    <span className="w-10 text-gray-700">{(prob * 100).toFixed(1)}%</span>
                   </div>
                 ))}
               </div>
+            )}
+
+            {/* IA EXPLAINER — apparait apres chaque prediction */}
+            {result && (
+              <AIExplainer
+                prediction={result.prediction}
+                confidence={result.confidence}
+                probabilities={result.probabilities}
+                formData={form}
+              />
             )}
           </div>
 
           {/* STATS + PIE CHART */}
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40">
             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <span>📊</span> Distribution des prédictions
+              📊 Distribution des prédictions
             </h2>
             {pieData.length > 0 ? (
               <ResponsiveContainer width="100%" height={250}>
@@ -236,29 +246,35 @@ export default function DashboardModerateur() {
 
             {/* BATCH */}
             <div className="mt-4 border-t border-pink-200 pt-4">
-              <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center gap-1">
-                <span>📁</span> Prédiction par lot (CSV)
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-1">
+                📁 Prédiction par lot (CSV)
               </h3>
-              <div className="relative">
-                <input type="file" accept=".csv"
-                  onChange={e => setCsvFile(e.target.files?.[0] || null)}
-                  className="w-full text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 cursor-pointer file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-pink-100 file:text-pink-600 file:text-sm hover:file:bg-pink-200"
-                />
-              </div>
-              {batchMsg && <p className="text-sm mt-2 text-green-600 flex items-center gap-1">{batchMsg}</p>}
+              <input type="file" accept=".csv"
+                onChange={e => setCsvFile(e.target.files?.[0] || null)}
+                className="w-full text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 cursor-pointer file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-pink-100 file:text-pink-600 file:text-sm hover:file:bg-pink-200"
+              />
+              {batchMsg && (
+                <p className="text-sm mt-2 text-green-600">{batchMsg}</p>
+              )}
               <button onClick={handleBatch} disabled={!csvFile}
                 className="mt-3 w-full bg-white border border-pink-300 hover:bg-pink-50 text-pink-600 rounded-xl py-2.5 text-sm transition disabled:opacity-40 disabled:cursor-not-allowed shadow-sm flex items-center justify-center gap-2">
-                <span>⬇️</span> Lancer et télécharger
+                ⬇️ Lancer et télécharger
               </button>
             </div>
           </div>
         </div>
 
-        {/* Message rigolo */}
-        <p className="text-center text-gray-500 text-xs mt-4">
-          🧸 Plus de 1000 prédictions déjà réalisées par notre équipe de nounours !
+        <p className="text-center text-gray-400 text-xs mt-4">
+          🧸 Système propulsé par XGBoost + Claude AI
         </p>
       </div>
+
+      {/* CHATBOT IA — bouton flottant */}
+      <AIChatbot
+        crecheNom={stats?.creche?.nom || 'Ma crèche'}
+        totalPredictions={stats?.total_predictions || 0}
+        distribution={stats?.distribution || {}}
+      />
     </div>
   );
 }
