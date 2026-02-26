@@ -5,7 +5,7 @@ import Register from './pages/Register'
 import Home from './pages/Home'
 import DashboardModerateur from './pages/DashboardModerateur'
 import DashboardAdmin from './pages/DashboardAdmin'
-import { ReactElement } from 'react'
+import { type ReactElement } from 'react'
 
 function ProtectedRoute({ children, role }: { children: ReactElement, role?: string }) {
   const { token, role: userRole } = useAuth()

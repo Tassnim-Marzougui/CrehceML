@@ -87,7 +87,7 @@ function generateExplanation(prediction: string, formData: Record<string, string
   return `📋 Analyse effectuée avec ${conf}% de confiance. Le modèle XGBoost a analysé les 8 critères et retourné la décision : ${CLASS_LABELS[prediction]}.`
 }
 
-export default function AIExplainer({ prediction, confidence, probabilities, formData }: Props) {
+export default function AIExplainer({ prediction, confidence, formData }: Props) {
   const [explanation, setExplanation] = useState('')
   const [loading, setLoading]         = useState(false)
   const [open, setOpen]               = useState(false)
