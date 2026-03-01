@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+frontend/node_modules/
+frontend/dist/
+.git/
+.gitignore
+tests/
+*.log
+.DS_Store
+Thumbs.db
+nursery-ml-projectt-python/
